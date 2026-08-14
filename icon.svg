@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Электробезопасность, II группа">
+  <rect width="512" height="512" rx="112" fill="#0b0d10"/>
+  <rect x="40" y="40" width="432" height="432" rx="88" fill="none" stroke="#f4f6f8" stroke-width="16"/>
+  <path d="M294 76 151 285h99l-31 151 142-217h-96z" fill="#f4f6f8"/>
+  <circle cx="404" cy="404" r="62" fill="#f4f6f8"/>
+  <text x="404" y="424" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" font-weight="800" fill="#0b0d10">II</text>
+</svg>
