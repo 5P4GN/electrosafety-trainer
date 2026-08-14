@@ -106,6 +106,7 @@ select{
 .review .item{background:linear-gradient(145deg,var(--surface-strong),var(--surface));border:1px solid var(--line);border-radius:16px;padding:12px;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}
 .review .item div{color:var(--muted);margin-top:4px;line-height:1.4}
 .note{font-size:12px;line-height:1.5;color:var(--muted);margin-top:4px;padding:0 2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .hidden{display:none!important}
 @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
   .card{background:linear-gradient(145deg,rgba(29,43,68,.68),rgba(13,22,39,.58));-webkit-backdrop-filter:blur(22px) saturate(145%);backdrop-filter:blur(22px) saturate(145%)}
@@ -170,6 +171,7 @@ select{
     <div class="progress"><div id="bar"></div></div>
     <div id="question" class="question"></div>
     <div id="options" class="options"></div>
+    <div id="answerStatus" class="sr-only" role="status" aria-live="polite"></div>
     <div class="nav">
       <button id="quit" class="btn">Назад</button>
       <button id="next" class="btn" disabled>Дальше</button>
@@ -229,6 +231,7 @@ function render(){
   answered=step.selected!==null;$("#next").disabled=!answered;
   $("#qTopic").textContent=q.topic+" · № "+q.id;$("#counter").textContent=(pos+1)+" / "+session.length;
   $("#bar").style.width=((answered?pos+1:pos)/session.length*100)+"%";$("#question").textContent=q.question;
+  $("#answerStatus").textContent=answered?(step.selected===q.answer?"Верно.":"Ошибка. Правильный ответ: "+q.options[q.answer]):"";
   let ops=step.order.map(orig=>({text:q.options[orig],orig}));
   $("#options").innerHTML="";
   ops.forEach((o,i)=>{
@@ -238,6 +241,8 @@ function render(){
       b.disabled=true;
       if(o.orig===q.answer)b.classList.add("correct");
       if(o.orig===step.selected&&step.selected!==q.answer)b.classList.add("wrong");
+      if(o.orig===q.answer)b.setAttribute("aria-label",`Вариант ${i+1}. ${o.text}. Правильный ответ.`);
+      else if(o.orig===step.selected)b.setAttribute("aria-label",`Вариант ${i+1}. ${o.text}. Ваш ответ, неверно.`);
     }
     b.onclick=()=>choose(b,q,o.orig);$("#options").appendChild(b);
   });
@@ -249,8 +254,11 @@ function choose(btn,q,idx){
   let correct=idx===q.answer,r=getRec(q.id);r.tries++;
   if(correct){r.correct++;ok++}else{r.wrong++;wrong.push(q)}save();updateStats();
   document.querySelectorAll(".opt").forEach(b=>{
-    b.disabled=true;let i=Number(b.dataset.orig);if(i===q.answer)b.classList.add("correct");if(b===btn&&!correct)b.classList.add("wrong");
+    b.disabled=true;let i=Number(b.dataset.orig),n=b.querySelector(".n").textContent;
+    if(i===q.answer){b.classList.add("correct");b.setAttribute("aria-label",`Вариант ${n}. ${q.options[i]}. Правильный ответ.`)}
+    if(b===btn&&!correct){b.classList.add("wrong");b.setAttribute("aria-label",`Вариант ${n}. ${q.options[i]}. Ваш ответ, неверно.`)}
   });
+  $("#answerStatus").textContent=correct?"Верно.":"Ошибка. Правильный ответ: "+q.options[q.answer];
   $("#next").disabled=false;$("#bar").style.width=((pos+1)/session.length*100)+"%";
 }
 function back(){if(pos===0){home();return}pos--;render();window.scrollTo(0,0)}
