@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "electrosafety-trainer-";
-const CACHE_NAME = `${CACHE_PREFIX}v1`;
+const CACHE_NAME = `${CACHE_PREFIX}v2`;
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -38,24 +38,33 @@ self.addEventListener("fetch", event => {
 
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
+      (async () => {
+        try {
+          const response = await fetch(event.request);
+          if (response.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put("./index.html", response.clone());
+          }
           return response;
-        })
-        .catch(() => caches.match("./index.html"))
+        } catch {
+          return (await caches.match("./index.html")) || (await caches.match("./"));
+        }
+      })()
     );
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+    (async () => {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+
+      const response = await fetch(event.request);
       if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(event.request, response.clone());
       }
       return response;
-    }))
+    })()
   );
 });
