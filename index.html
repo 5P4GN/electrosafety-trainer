@@ -73,6 +73,7 @@ select{
 .cheat{overflow:hidden;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,var(--surface-strong),var(--surface));box-shadow:inset 0 1px 0 rgba(255,255,255,.11)}
 .cheat>summary{min-height:64px;display:flex;align-items:center;gap:12px;padding:11px 13px;list-style:none;cursor:pointer;user-select:none}
 .cheat>summary::-webkit-details-marker{display:none}
+.cheat>summary:focus-visible{outline-offset:-4px;border-radius:inherit}
 .cheat-mark{width:40px;height:40px;display:grid;place-items:center;flex:0 0 40px;border:1px solid rgba(159,196,255,.30);border-radius:14px;color:#dce9ff;background:linear-gradient(145deg,rgba(99,151,255,.26),rgba(152,105,255,.18))}
 .cheat-mark svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .cheat-title{min-width:0;display:grid;gap:2px;flex:1}
@@ -201,10 +202,10 @@ select{
         <label class="sr-only" for="answerSearch">Введите первые слова вопроса</label>
         <div class="search-box">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-          <input id="answerSearch" class="search-input" type="search" placeholder="Первые слова вопроса…" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-controls="cheatResults">
+          <input id="answerSearch" class="search-input" type="search" placeholder="Первые слова вопроса…" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-controls="cheatResults" aria-describedby="cheatStatus">
         </div>
         <div id="cheatStatus" class="cheat-status" role="status" aria-live="polite">Введите хотя бы три буквы.</div>
-        <div id="cheatResults" class="cheat-results" hidden></div>
+        <div id="cheatResults" class="cheat-results" role="list" hidden></div>
       </div>
     </details>
     <button id="reset" class="btn">Сбросить статистику</button>
@@ -297,14 +298,14 @@ function findAnswers(query){
 }
 function renderAnswerSearch(){
   let query=normalizeSearch($("#answerSearch").value),results=$("#cheatResults"),status=$("#cheatStatus");
-  results.replaceChildren();results.hidden=true;
+  results.textContent="";results.hidden=true;
   if(query.length<3){status.textContent="Введите хотя бы три буквы.";return}
   let hits=findAnswers(query);
   if(!hits.length){status.textContent="Совпадений нет. Попробуйте написать вопрос короче.";return}
   let shown=hits.slice(0,6);
   status.textContent=hits.length>shown.length?`Совпадений: ${hits.length}. Показаны первые ${shown.length} — добавьте ещё слово.`:`Совпадений: ${hits.length}.`;
   shown.forEach(({q})=>{
-    let item=document.createElement("article");item.className="cheat-result";
+    let item=document.createElement("article");item.className="cheat-result";item.setAttribute("role","listitem");
     let meta=document.createElement("div");meta.className="cheat-meta";meta.textContent=`${q.topic} · № ${q.id}`;
     let question=document.createElement("div");question.className="cheat-question";question.textContent=q.question;
     let answer=document.createElement("div");answer.className="cheat-answer";
